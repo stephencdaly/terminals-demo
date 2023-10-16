@@ -2,8 +2,16 @@
   "name": "terminals-demo",
   "version": "0.0.1",
   "description": "Demo taking in-person payments with a Stripe terminal",
-  "main": "index.js",
+  "engines": {
+    "node": "^18.18.2",
+    "npm": "^9.6.7"
+  },
+  "main": "dist/index.js",
   "scripts": {
+    "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
+    "build": "tsc",
+    "prestart": "npm run build",
+    "start": "node .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -15,5 +23,15 @@
   "bugs": {
     "url": "https://github.com/stephencdaly/terminals-demo/issues"
   },
-  "homepage": "https://github.com/stephencdaly/terminals-demo#readme"
+  "homepage": "https://github.com/stephencdaly/terminals-demo#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.19",
+    "@types/node": "^18.18.5",
+    "tslint": "^6.1.3",
+    "typescript": "^5.2.2"
+  }
 }
