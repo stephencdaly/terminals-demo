@@ -5,6 +5,14 @@
     <div class="govuk-grid-column-two-thirds">
         <h1 class="govuk-heading-l">Terminals</h1>
 
+        <p class="govuk-body">
+            {{ govukButton({
+                classes: "govuk-button--secondary",
+                text: "Register a new terminal",
+                href: "/readers/register"
+            }) }}
+        </p>
+
         <div>
             {% for reader in readers %}
                 <div class="list-item">
