@@ -12,8 +12,9 @@ export async function list(req: Request, res: Response, next: NextFunction) {
         const {query} = req
         const deviceType = (query.simulated && 'simulated_wisepos_e') || 'bbpos_wisepos_e'
         const readers = await stripe.terminal.readers.list({
-            device_type: deviceType
-        })
+                device_type: deviceType,
+                expand: ['data.location']
+            })
         res.render('list-readers', {readers: readers.data})
     } catch (err) {
         next(err)

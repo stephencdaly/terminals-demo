@@ -1,28 +1,36 @@
 {% extends "layout.njk" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block main %}
-<h1 class="govuk-heading-l">Terminals</h1>
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">Terminals</h1>
 
-<div>
-    <table class="govuk-table">
-        <thead class="govuk-table__head">
-            <tr class="govuk-table__row">
-                <th class="govuk-table__header" scope="col">Label</th>
-                <th class="govuk-table__header" scope="col">Serial number</th>
-            </tr>
-        </thead>
-        {% for reader in readers %}
-        <tr class="govuk-table__row">
-            <td class="govuk-table__cell">
-                <a class="govuk-link govuk-link--no-visited-state" href="/readers/{{ reader.id }}">
-                    {{ reader.label }}
-                </a>
-            </td>
-            <td class="govuk-table__cell">{{ reader.serial_number }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-</div>
+        <div>
+            {% for reader in readers %}
+                <div class="list-item">
+                    <h2 class="govuk-heading-m"><a class="govuk-link govuk-link--no-visited-state"
+                                                   href="/readers/{{ reader.id }}">{{ reader.label }}</a></h2>
+                    <div class="list-item-meta">
+                        <dl>
+                            <dt>Location:</dt>
+                            <dd>{{ reader.location.display_name }}</dd>
+                        </dl>
+                        <dl>
+                            <dt>Serial number:</dt>
+                            <dd>{{ reader.serial_number }}</dd>
+                        </dl>
+                    </div>
+                    <div>
+                        {{ govukButton({
+                            classes: "govuk-button--secondary",
+                            text: "Take a payment",
+                            href: "/readers/{{ reader.id }}/payment"
+                        }) }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
 
 {% endblock %}
 
