@@ -1,0 +1,22 @@
+{% extends "layout.njk" %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+
+{% block main %}
+
+    <h1 class="govuk-heading-l">Terminal detail</h1>
+
+    {{ govukSummaryList({
+        rows: [{
+            key: { text: "Serial number"},
+            value: { text: reader.serial_number }
+        }, {
+            key: { text: "Label"},
+            value: { text: reader.label }
+        }, {
+            key: { text: "Location" },
+            value: { text: reader.location.display_name }
+        }]
+    }) }}
+
+
+{% endblock %}

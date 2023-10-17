@@ -1,6 +1,7 @@
 # Compiled assets
 dist/
 app/public
+public/
 
 src/tests/cypress/videos
 src/tests/cypress/screenshots

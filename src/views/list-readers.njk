@@ -1,0 +1,28 @@
+{% extends "layout.njk" %}
+
+{% block main %}
+<h1 class="govuk-heading-l">Terminals</h1>
+
+<div>
+    <table class="govuk-table">
+        <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+                <th class="govuk-table__header" scope="col">Label</th>
+                <th class="govuk-table__header" scope="col">Serial number</th>
+            </tr>
+        </thead>
+        {% for reader in readers %}
+        <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+                <a class="govuk-link govuk-link--no-visited-state" href="/readers/{{ reader.id }}">
+                    {{ reader.label }}
+                </a>
+            </td>
+            <td class="govuk-table__cell">{{ reader.serial_number }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endblock %}
+
