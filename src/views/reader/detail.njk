@@ -1,22 +1,37 @@
-{% extends "layout.njk" %}
+{% extends "../layout.njk" %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
 
 {% block main %}
+    <div class="govuk-grid-column-two-thirds">
 
-    <h1 class="govuk-heading-l">Terminal detail</h1>
+        {{ govukBackLink({
+            text: "All terminals",
+            href: "/readers?simulated={{ simulated }}"
+        }) }}
+        <h1 class="govuk-heading-l">Terminal detail</h1>
 
-    {{ govukSummaryList({
-        rows: [{
-            key: { text: "Serial number"},
-            value: { text: reader.serial_number }
-        }, {
-            key: { text: "Label"},
-            value: { text: reader.label }
-        }, {
-            key: { text: "Location" },
-            value: { text: reader.location.display_name }
-        }]
-    }) }}
+        {{ govukSummaryList({
+            rows: [{
+                key: { text: "Name"},
+                value: { text: reader.label }
+            }, {
+                key: { text: "Serial number"},
+                value: { text: reader.serial_number }
+            }, {
+                key: { text: "Location" },
+                value: { text: reader.location.display_name }
+            }]
+        }) }}
 
+        <form method="POST" action="/readers/{{ reader.id }}/delete">
+            <input id="simulated" name="simulated" type="hidden" value="{{ simulated }}"/>
+            {{ govukButton({
+                classes: "govuk-button--warning",
+                text: "Delete terminal"
+            }) }}
+        </form>
+    </div>
 
 {% endblock %}

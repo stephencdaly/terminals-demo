@@ -39,3 +39,94 @@ export async function createUsingSimulatedReader(req: Request, res: Response, ne
         next(err)
     }
 }
+
+export async function getCreatePayment(req: Request, res: Response, next: NextFunction) {
+    try {
+        const {params, query} = req
+        res.render('payment/create', {
+            readerId: params.id,
+            simulated: query.simulated || false
+        })
+    } catch (err) {
+        next(err)
+    }
+}
+
+export async function postCreatePayment(req: Request, res: Response, next: NextFunction) {
+    try {
+        const {params, body} = req
+        const amount = convertPoundsAndPenceToPence(body.amount)
+
+        const reader = await stripe.terminal.readers.retrieve(params.id, {
+            expand: ['location']
+        })
+
+        logger.info(`Creating payment for amount: ${amount} on reader ${reader.id}`)
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount,
+            currency: 'gbp',
+            payment_method_types: ['card_present'],
+            capture_method: 'automatic'
+        })
+        logger.info(`Payment intent created, id: ${paymentIntent.id}`)
+
+        await stripe.terminal.readers.processPaymentIntent(reader.id, {
+            payment_intent: paymentIntent.id
+        })
+        logger.info(`Started processing payment on reader ${reader.id}`)
+
+        res.redirect(`/readers/${reader.id}/payment/${paymentIntent.id}/check-status?simulated=${body.simulated || false}`)
+    } catch (err) {
+        next(err)
+    }
+}
+
+export async function checkStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+        const {params, query} = req
+        logger.info(`Checking status of payment intent ${params.paymentIntentId}`)
+        const paymentIntent = await stripe.paymentIntents.retrieve(params.paymentIntentId)
+        if (paymentIntent.status === 'succeeded') {
+            res.render('payment/success', {
+                paymentIntent,
+                simulated: query.simulated || false
+            })
+        } else {
+            const reader = await stripe.terminal.readers.retrieve(params.readerId, {
+                expand: ['location']
+            })
+            res.render('payment/in-progress', {
+                reader,
+                paymentIntentId: paymentIntent.id,
+                simulated: query.simulated || false
+            })
+        }
+    } catch (err) {
+        next(err)
+    }
+}
+
+function convertPoundsAndPenceToPence(poundsAndPenceAmount: string) {
+    const indexOfLastCharacter = poundsAndPenceAmount.length - 1
+    const indexOfDecimalPoint = poundsAndPenceAmount.lastIndexOf('.')
+    const charactersAfterDecimalPoint = indexOfDecimalPoint !== -1 ? indexOfLastCharacter - indexOfDecimalPoint : 0
+
+    let pounds
+    let pence
+
+    switch (charactersAfterDecimalPoint) {
+        case 2:
+            pounds = poundsAndPenceAmount.slice(0, indexOfDecimalPoint)
+            pence = poundsAndPenceAmount.slice(indexOfDecimalPoint + 1)
+            break
+        case 1:
+            pounds = poundsAndPenceAmount.slice(0, indexOfDecimalPoint)
+            pence = poundsAndPenceAmount.slice(indexOfDecimalPoint + 1).concat('0')
+            break
+        default:
+            pounds = poundsAndPenceAmount
+            pence = '00'
+    }
+
+    return Number(pounds.concat(pence))
+}

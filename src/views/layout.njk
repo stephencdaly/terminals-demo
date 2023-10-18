@@ -1,3 +1,5 @@
+{% from "govuk/components/footer/macro.njk" import govukFooter %}
+
 <!DOCTYPE html>
 <html lang="en" class="govuk-template">
 <head>
@@ -6,6 +8,8 @@
     <title>Stripe terminals demo</title>
     <link rel="stylesheet" href="/stylesheets/application.min.css" media="all">
     <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon">
+    {% block head %}
+    {% endblock %}
 </html>
 
 <body class="govuk-template__body js-enabled">
@@ -24,6 +28,8 @@
 
     <div class="govuk-!-padding-top-4 govuk-!-padding-bottom-9">
         <div class="govuk-grid-row">
+            {% include "./flash.njk" %}
+
             <div class="govuk-grid-column-three-quarters">
                 {% block main %}
                 {% endblock %}
@@ -32,11 +38,6 @@
     </div>
 </div>
 
-<footer class="govuk-footer">
-    <div class="govuk-width-container">
-        <div class="govuk-footer__meta">
-        </div>
-    </div>
-</footer>
+{{ govukFooter({}) }}
 </body>
 </html>

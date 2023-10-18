@@ -1,0 +1,49 @@
+{% extends "../layout.njk" %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+
+{% block main %}
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">Start a payment on a terminal</h1>
+
+        <form method="post" action="/readers/{{ readerId }}/payment" novalidate>
+
+            <input id="simulated" name="simulated" type="hidden" value="{{ simulated }}"/>
+
+            {{ govukInput({
+                label: {
+                    text: "Amount"
+                },
+                classes: "govuk-input--width-20",
+                id: "amount",
+                name: "amount",
+                prefix: {
+                    text: "£"
+                },
+                classes: "govuk-input--width-5",
+                spellcheck: false
+            }) }}
+
+            {{ govukInput({
+                label: {
+                    text: "Reference"
+                },
+                id: "reference",
+                name: "reference",
+                spellcheck: false,
+                attributes: {
+                    'autocapitalize': 'none'
+                }
+            }) }}
+
+            {{ govukButton({ text: "Start payment on terminal" }) }}
+        </form>
+
+        <p class="govuk-body govuk-!-margin-top-9">
+            <a class="govuk-link govuk-link--no-visited-state" href="/readers?simulated={{ simulated }}">
+                Cancel
+            </a>
+        </p>
+    </div>
+{% endblock %}

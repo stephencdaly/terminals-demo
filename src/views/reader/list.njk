@@ -1,15 +1,26 @@
-{% extends "layout.njk" %}
+{% extends "../layout.njk" %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block main %}
     <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-l">Terminals</h1>
+        <h1 class="govuk-heading-l">
+            Terminals
+            {% if simulated %}
+                <strong class="govuk-tag govuk-tag--grey">SIMULATED</strong>
+            {% endif %}
+        </h1>
+
+        {% if simulated %}
+            <p><a class="govuk-link govuk-link--no-visited-state" href="/readers">Show real terminals</a></p>
+        {% else %}
+            <p><a class="govuk-link govuk-link--no-visited-state" href="/readers?simulated=true">Show simulated terminals</a></p>
+        {% endif %}
 
         <p class="govuk-body">
             {{ govukButton({
                 classes: "govuk-button--secondary",
                 text: "Register a new terminal",
-                href: "/readers/register"
+                href: "/readers/register?simulated=true" if simulated else "/readers/register"
             }) }}
         </p>
 
@@ -17,7 +28,8 @@
             {% for reader in readers %}
                 <div class="list-item">
                     <h2 class="govuk-heading-m"><a class="govuk-link govuk-link--no-visited-state"
-                                                   href="/readers/{{ reader.id }}">{{ reader.label }}</a></h2>
+                                                   href="/readers/{{ reader.id }}?simulated={{ simulated }}">{{ reader.label }}</a>
+                    </h2>
                     <div class="list-item-meta">
                         <dl>
                             <dt>Location:</dt>
@@ -28,12 +40,14 @@
                             <dd>{{ reader.serial_number }}</dd>
                         </dl>
                     </div>
-                    <div>
-                        {{ govukButton({
-                            classes: "govuk-button--secondary",
-                            text: "Take a payment",
-                            href: "/readers/{{ reader.id }}/payment"
-                        }) }}
+                    <div class="govuk-button-group">
+                        <span>
+                            {{ govukButton({
+                                classes: "govuk-button--secondary",
+                                text: "Take a payment",
+                                href: "/readers/" + reader.id + "/payment"
+                            }) }}
+                        </span>
                     </div>
                 </div>
             {% endfor %}
