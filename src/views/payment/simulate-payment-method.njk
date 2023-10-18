@@ -1,0 +1,22 @@
+{% extends "../layout.njk" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block main %}
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">Payment in progress</h1>
+
+        <p class="govuk-body-l">Payment created for a simulated terminal</p>
+        <p class="govuk-body">For a real terminal, the terminal would now be ready to accept the customer's card.</p>
+
+        <form method="post" action="/readers/{{ readerId }}/payment/{{ paymentIntentId }}/simulate-payment-method">
+            {{ govukButton({ text: "Simulate card payment" }) }}
+        </form>
+
+        <p class="govuk-body govuk-!-margin-top-4">
+            <a class="govuk-link govuk-link--no-visited-state"
+               href="/readers?simulated={{ simulated }}">
+                Cancel
+            </a>
+        </p>
+    </div>
+{% endblock %}

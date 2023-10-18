@@ -8,6 +8,7 @@ import logger from './logger'
 
 import * as payment from './payment.http'
 import * as readers from './reader.http'
+import * as stripe from './stripe.http'
 import path from 'path'
 
 dotenv.config()
@@ -40,6 +41,11 @@ app.post('/readers/:id/delete', readers.deleteReader)
 // payment
 app.get('/readers/:id/payment', payment.getCreatePayment)
 app.post('/readers/:id/payment', payment.postCreatePayment)
+app.get('/readers/:readerId/payment/:paymentIntentId/simulate-payment-method', payment.getSimulatePaymentMethod)
+app.post('/readers/:readerId/payment/:paymentIntentId/simulate-payment-method', payment.postSimulatePaymentMethod)
 app.get('/readers/:readerId/payment/:paymentIntentId/check-status', payment.checkStatus)
+
+// stripe
+app.post('/stripe/connection-token', stripe.connectionToken)
 
 app.listen(port, () => logger.info(`server started on port ${port}`))

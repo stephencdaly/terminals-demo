@@ -1,12 +1,8 @@
 {% extends "../layout.njk" %}
-{% from "govuk/components/panel/macro.njk" import govukPanel %}
 
 {% block main %}
     <div class="govuk-grid-column-two-thirds">
-        {{ govukPanel({
-            titleText: "Payment successful",
-            html: "Your reference number<br><strong>" + reference + "</strong>"
-        }) }}
+        <p class="govuk-body-l">Your payment was declined. No money has been taken.</p>
 
         <p class="govuk-body govuk-!-margin-top-9">
             <a class="govuk-link govuk-link--no-visited-state" href="/readers?simulated={{ simulated }}">

@@ -1,0 +1,90 @@
+{% extends "../layout.njk" %}
+
+{% block head %}
+    <script>
+
+        async function fetchConnectionToken() {
+            const response = await fetch('/stripe/connection-token', { method: "POST" });
+            const data = await response.json();
+            return data.secret;
+        }
+
+        function unexpectedDisconnect() {
+            // You might want to display UI to notify the user and start re-discovering readers
+        }
+
+        async function connectReaderHandler() {
+            const terminal = StripeTerminal.create({
+                onFetchConnectionToken: fetchConnectionToken,
+                onUnexpectedReaderDisconnect: unexpectedDisconnect,
+            });
+
+            const config = {
+                simulated: {{ simulated }},
+                location: "{{ reader.location.id }}"
+            };
+            console.log('Config ' + JSON.stringify(config))
+            const discoverResult = await terminal.discoverReaders(config);
+            if (discoverResult.error) {
+                console.log('Failed to discover: ', discoverResult.error);
+            } else if (discoverResult.discoveredReaders.length === 0) {
+                console.log('No available readers.');
+            } else {
+                console.log('Discovered readers ' + JSON.stringify(discoverResult))
+                let selectedReader
+                if ({{ simulated }}) {
+                    // Just select the first one - this won't show registered simulated readers
+                    selectedReader = discoverResult.discoveredReaders[0]
+                } else {
+                    selectedReader = discoverResult.discoveredReaders.find(reader => (reader.id === "{{ readerId }}"));
+                }
+                if (!selectedReader) {
+                    console.log('Requested reader not found.');
+                    return;
+                }
+
+                const connectResult = await terminal.connectReader(selectedReader);
+                if (connectResult.error) {
+                    console.log('Failed to connect: ', connectResult.error);
+                } else {
+                    console.log('Connected to reader: ', connectResult.reader.label);
+                    document.getElementById("payment-status").textContent=`Continue payment on terminal “${connectResult.reader.label}”`
+
+                    const result = await terminal.collectPaymentMethod("{{ clientSecret }}", {
+                        config_override: {
+                            update_payment_intent: true,
+                            payment_intent_id: "{{ paymentIntentId }}"
+                        }
+                    });
+                    if (result.error) {
+                        // Placeholder for handling result.error
+                        console.log('There was an error processing the payment ' + JSON.stringify(result.error))
+                    } else {
+                        console.log('Result ' + JSON.stringify(result))
+                        const processResult = await terminal.processPayment(result.paymentIntent)
+                        console.log("Process result " + JSON.stringify(processResult))
+
+                        if ({{ simulated }}) {
+                            window.location.href = `/readers/${selectedReader.id}/payment/{{ paymentIntentId }}/simulate-payment-method`
+                        } else {
+                            window.location.href = `/readers/${selectedReader.id}/payment/{{ paymentIntentId }}/check-status`
+                        }
+                    }
+                }
+            }
+        }
+        window.onload = function() {
+            connectReaderHandler();
+        };
+    </script>
+{% endblock %}
+
+{% block main %}
+    <h1 class="govuk-heading-l">Payment in progress</h1>
+
+    <p class="govuk-body-l" id="payment-status">Connecting to terminal “{{ reader.label }}”</p>
+
+    <div id="spinner">
+        <img src="/images/spinner.gif"/>
+    </div>
+{% endblock %}

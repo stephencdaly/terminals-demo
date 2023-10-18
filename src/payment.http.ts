@@ -64,18 +64,52 @@ export async function postCreatePayment(req: Request, res: Response, next: NextF
         logger.info(`Creating payment for amount: ${amount} on reader ${reader.id}`)
         const paymentIntent = await stripe.paymentIntents.create({
             amount,
+            description: body.reference,
             currency: 'gbp',
             payment_method_types: ['card_present'],
             capture_method: 'automatic'
         })
         logger.info(`Payment intent created, id: ${paymentIntent.id}`)
 
-        await stripe.terminal.readers.processPaymentIntent(reader.id, {
-            payment_intent: paymentIntent.id
-        })
-        logger.info(`Started processing payment on reader ${reader.id}`)
+        // await stripe.terminal.readers.processPaymentIntent(reader.id, {
+        //     payment_intent: paymentIntent.id
+        // })
+        // logger.info(`Started processing payment on reader ${reader.id}`)
 
-        res.redirect(`/readers/${reader.id}/payment/${paymentIntent.id}/check-status?simulated=${body.simulated || false}`)
+        // res.redirect(`/readers/${reader.id}/payment/${paymentIntent.id}/check-status?simulated=${body.simulated || false}`)
+        res.render('payment/start-payment', {
+            stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
+            readerId: reader.id,
+            reader,
+            paymentIntentId: paymentIntent.id,
+            clientSecret: paymentIntent.client_secret,
+            simulated: body.simulated || false
+        })
+    } catch (err) {
+        next(err)
+    }
+}
+
+export async function getSimulatePaymentMethod(req: Request, res: Response, next: NextFunction) {
+    try {
+        const {params} = req
+        res.render('payment/simulate-payment-method', {
+            simulated: true,
+            readerId: params.readerId,
+            paymentIntentId: params.paymentIntentId
+        })
+    } catch (err) {
+        next(err)
+    }
+}
+
+export async function postSimulatePaymentMethod(req: Request, res: Response, next: NextFunction) {
+    try {
+        const {params, body} = req
+        const readerId = params.readerId
+        const paymentIntentId = params.paymentIntentId
+        await stripe.testHelpers.terminal.readers.presentPaymentMethod(readerId)
+        res.redirect(`/reader/${readerId}/payment/${paymentIntentId}/check-status`)
     } catch (err) {
         next(err)
     }
@@ -86,19 +120,33 @@ export async function checkStatus(req: Request, res: Response, next: NextFunctio
         const {params, query} = req
         logger.info(`Checking status of payment intent ${params.paymentIntentId}`)
         const paymentIntent = await stripe.paymentIntents.retrieve(params.paymentIntentId)
+        logger.info(`Payment method status is ${paymentIntent.status}`)
+        const reader = await stripe.terminal.readers.retrieve(params.readerId, {
+            expand: ['location']
+        })
         if (paymentIntent.status === 'succeeded') {
             res.render('payment/success', {
                 paymentIntent,
-                simulated: query.simulated || false
+                simulated: isSimulated(reader),
+                reference: paymentIntent.description
             })
-        } else {
-            const reader = await stripe.terminal.readers.retrieve(params.readerId, {
-                expand: ['location']
+        } else if (paymentIntent.last_payment_error) {
+            res.render('payment/declined', {
+                paymentIntent,
+                simulated: isSimulated(reader)
             })
+        } else if (paymentIntent.status === 'requires_confirmation') {
+            await stripe.paymentIntents.confirm(params.paymentIntentId)
             res.render('payment/in-progress', {
                 reader,
                 paymentIntentId: paymentIntent.id,
-                simulated: query.simulated || false
+                simulated: isSimulated(reader)
+            })
+        } else {
+            res.render('payment/in-progress', {
+                reader,
+                paymentIntentId: paymentIntent.id,
+                simulated: isSimulated(reader)
             })
         }
     } catch (err) {
@@ -129,4 +177,8 @@ function convertPoundsAndPenceToPence(poundsAndPenceAmount: string) {
     }
 
     return Number(pounds.concat(pence))
+}
+
+function isSimulated(reader: Stripe.Terminal.Reader | Stripe.Terminal.DeletedReader) {
+    return (reader as Stripe.Terminal.Reader).device_type.startsWith('simulated')
 }
