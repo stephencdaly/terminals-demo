@@ -24,7 +24,7 @@ nunjucks.configure(templatePathRoots, {autoescape: true, express: app})
 app.set('view engine', 'njk')
 
 app.use(session({ cookie: { maxAge: 60000 },
-    secret: process.env.COOKIE_SESSION_ENCRYPTION_SECRET,
+    secret: process.env.COOKIE_SESSION_ENCRYPTION_SECRET || "secretkey",
     resave: false,
     saveUninitialized: false}));
 app.use(express.urlencoded({ extended: false }))
