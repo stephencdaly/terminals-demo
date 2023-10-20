@@ -4,9 +4,12 @@
 
 {% block mainContent %}
     <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-l">Register a terminal</h1>
+        <h1 class="govuk-heading-l">
+            <span class="govuk-caption-l">{{ location.display_name }}</span>
+            Register a terminal
+        </h1>
 
-        <form method="post" action="/readers/register" novalidate>
+        <form method="post" action="/locations/{{ locationId }}/readers/register" novalidate>
 
             {{ govukInput({
                 label: {
@@ -24,25 +27,14 @@
                 classes: "govuk-input--width-20",
                 id: "code",
                 name: "code",
-                value: "simulated-wpe" if simulated else ""
+                value: "simulated-wpe" if simulated === "true" else ""
             }) }}
-
-            <div class="govuk-form-group">
-                <label class="govuk-label" for="location">
-                    Location
-                </label>
-                <select class="govuk-select" id="location" name="location">
-                    {% for location in locations %}
-                        <option value="{{ location.id }}">{{ location.display_name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
 
             {{ govukButton({ text: "Register terminal" }) }}
         </form>
 
         <p class="govuk-body govuk-!-margin-top-9">
-            <a class="govuk-link govuk-link--no-visited-state" href="/readers?simulated={{ simulated }}">
+            <a class="govuk-link govuk-link--no-visited-state" href="/locations/{{ locationId }}/readers?simulated={{ simulated }}">
                 Cancel
             </a>
         </p>

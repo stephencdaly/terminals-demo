@@ -7,8 +7,8 @@
     <div class="govuk-grid-column-two-thirds">
 
         {{ govukBackLink({
-            text: "All terminals",
-            href: "/readers?simulated={{ simulated }}"
+            text: "Terminals",
+            href: "/locations/" +  locationId + "/readers?simulated=" + simulated
         }) }}
         <h1 class="govuk-heading-l">Terminal detail</h1>
 
@@ -25,7 +25,7 @@
             }]
         }) }}
 
-        <form method="POST" action="/readers/{{ reader.id }}/delete">
+        <form method="POST" action="/locations/{{ locationId }}/readers/{{ reader.id }}/delete">
             <input id="simulated" name="simulated" type="hidden" value="{{ simulated }}"/>
             {{ govukButton({
                 classes: "govuk-button--warning",

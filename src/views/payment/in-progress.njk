@@ -8,7 +8,7 @@
     <div class="govuk-grid-column-two-thirds">
         <h1 class="govuk-heading-l">Payment in progress</h1>
 
-        <p class="govuk-body-l">Processing payment</p>
+        <p class="govuk-body-l">Continue payment on terminal</p>
 
         <div id="spinner">
             <img src="/images/spinner.gif"/>
@@ -16,7 +16,7 @@
 
         <p class="govuk-body govuk-!-margin-top-9">
             <a class="govuk-link govuk-link--no-visited-state"
-               href="/readers?simulated={{ simulated }}">
+               href="/locations/{{ locationId }}/readers/{{ reader.id }}/cancel-action">
                 Cancel
             </a>
         </p>

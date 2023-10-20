@@ -8,6 +8,7 @@ import logger from './logger'
 
 import * as payment from './payment.http'
 import * as readers from './reader.http'
+import * as locations from './location.http'
 import * as stripe from './stripe.http'
 import path from 'path'
 
@@ -31,19 +32,25 @@ app.use(express.urlencoded({ extended: false }))
 app.use(express.json({ strict: true, limit: '15kb' }))
 app.use(flash())
 
+// locations
+app.get('/locations', locations.list)
+
 // manage readers
-app.get('/readers/:simulated', readers.list)
-app.get('/readers/:simulated/register', readers.getRegister)
-app.post('/readers/:simulated/register', readers.postRegister)
-app.get('/readers/:simulated/:id', readers.detail)
-app.post('/readers/:simulated/:id/delete', readers.deleteReader)
+app.get('/locations/:locationId/readers', readers.list)
+app.get('/locations/:locationId/readers/register', readers.getRegister)
+app.post('/locations/:locationId/readers/register', readers.postRegister)
+
+app.get('/locations/:locationId/readers/:id', readers.detail)
+app.post('/locations/:locationId/readers/:id/delete', readers.deleteReader)
+app.get('/locations/:locationId/readers/:id/cancel-action', readers.cancelAction)
 
 // payment
-app.get('/readers/:id/payment', payment.getCreatePayment)
-app.post('/readers/:id/payment', payment.postCreatePayment)
-app.get('/readers/:readerId/payment/:paymentIntentId/simulate-payment-method', payment.getSimulatePaymentMethod)
-app.post('/readers/:readerId/payment/:paymentIntentId/simulate-payment-method', payment.postSimulatePaymentMethod)
-app.get('/readers/:readerId/payment/:paymentIntentId/check-status', payment.checkStatus)
+app.get('/locations/:locationId/readers/:id/payment', payment.getCreatePayment)
+app.post('/locations/:locationId/readers/:id/payment', payment.postCreatePaymentServerSide)
+app.post('/locations/:locationId/readers/:id/payment-client-side', payment.postCreatePaymentClientSide)
+app.get('/locations/:locationId/readers/:readerId/payment/:paymentIntentId/simulate-payment-method', payment.getSimulatePaymentMethod)
+app.post('/locations/:locationId/readers/:readerId/payment/:paymentIntentId/simulate-payment-method', payment.postSimulatePaymentMethod)
+app.get('/locations/:locationId/readers/:readerId/payment/:paymentIntentId/check-status', payment.checkStatus)
 
 // stripe
 app.post('/stripe/connection-token', stripe.connectionToken)

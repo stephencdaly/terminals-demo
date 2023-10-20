@@ -46,6 +46,7 @@ export async function getCreatePayment(req: Request, res: Response, next: NextFu
         const {params, query} = req
         res.render('payment/create', {
             readerId: params.id,
+            locationId: params.locationId,
             simulated: query.simulated || false
         })
     } catch (err) {
@@ -53,7 +54,7 @@ export async function getCreatePayment(req: Request, res: Response, next: NextFu
     }
 }
 
-export async function postCreatePayment(req: Request, res: Response, next: NextFunction) {
+export async function postCreatePaymentClientSide(req: Request, res: Response, next: NextFunction) {
     try {
         const {params, body} = req
         const amount = convertPoundsAndPenceToPence(body.amount)
@@ -72,20 +73,45 @@ export async function postCreatePayment(req: Request, res: Response, next: NextF
         })
         logger.info(`Payment intent created, id: ${paymentIntent.id}`)
 
-        // await stripe.terminal.readers.processPaymentIntent(reader.id, {
-        //     payment_intent: paymentIntent.id
-        // })
-        // logger.info(`Started processing payment on reader ${reader.id}`)
-
-        // res.redirect(`/readers/${reader.id}/payment/${paymentIntent.id}/check-status?simulated=${body.simulated || false}`)
-        res.render('payment/start-payment', {
+        res.render('payment/start-payment-client-side', {
             stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
             readerId: reader.id,
+            locationId: params.locationId,
             reader,
             paymentIntentId: paymentIntent.id,
             clientSecret: paymentIntent.client_secret,
             simulated: isSimulated(reader)
         })
+    } catch (err) {
+        next(err)
+    }
+}
+
+export async function postCreatePaymentServerSide(req: Request, res: Response, next: NextFunction) {
+    try {
+        const {params, body} = req
+        const amount = convertPoundsAndPenceToPence(body.amount)
+
+        const reader = await stripe.terminal.readers.retrieve(params.id, {
+            expand: ['location']
+        })
+
+        logger.info(`Creating payment for amount: ${amount} on reader ${reader.id}`)
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount,
+            description: body.reference,
+            currency: 'gbp',
+            payment_method_types: ['card_present'],
+            capture_method: 'automatic'
+        })
+        logger.info(`Payment intent created, id: ${paymentIntent.id}`)
+
+        await stripe.terminal.readers.processPaymentIntent(reader.id, {
+            payment_intent: paymentIntent.id
+        })
+        logger.info(`Started processing payment on reader ${reader.id}`)
+
+        res.redirect(`/locations/${params.locationId}/readers/${reader.id}/payment/${paymentIntent.id}/check-status`)
     } catch (err) {
         next(err)
     }
@@ -97,6 +123,7 @@ export async function getSimulatePaymentMethod(req: Request, res: Response, next
         res.render('payment/simulate-payment-method', {
             simulated: true,
             readerId: params.readerId,
+            locationId: params.locationId,
             paymentIntentId: params.paymentIntentId
         })
     } catch (err) {
@@ -118,7 +145,7 @@ export async function postSimulatePaymentMethod(req: Request, res: Response, nex
 
 export async function checkStatus(req: Request, res: Response, next: NextFunction) {
     try {
-        const {params, query} = req
+        const {params} = req
         logger.info(`Checking status of payment intent ${params.paymentIntentId}`)
         const paymentIntent = await stripe.paymentIntents.retrieve(params.paymentIntentId)
         logger.info(`Payment method status is ${paymentIntent.status}`)
@@ -128,24 +155,28 @@ export async function checkStatus(req: Request, res: Response, next: NextFunctio
         if (paymentIntent.status === 'succeeded') {
             res.render('payment/success', {
                 paymentIntent,
+                locationId: params.locationId,
                 simulated: isSimulated(reader),
                 reference: paymentIntent.description
             })
         } else if (paymentIntent.last_payment_error) {
             res.render('payment/declined', {
                 paymentIntent,
+                locationId: params.locationId,
                 simulated: isSimulated(reader)
             })
         } else if (paymentIntent.status === 'requires_confirmation') {
             await stripe.paymentIntents.confirm(params.paymentIntentId)
             res.render('payment/in-progress', {
                 reader,
+                locationId: params.locationId,
                 paymentIntentId: paymentIntent.id,
                 simulated: isSimulated(reader)
             })
         } else {
             res.render('payment/in-progress', {
                 reader,
+                locationId: params.locationId,
                 paymentIntentId: paymentIntent.id,
                 simulated: isSimulated(reader)
             })

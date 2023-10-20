@@ -1,0 +1,35 @@
+{% extends "../layout.njk" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block mainContent %}
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">
+            Locations
+        </h1>
+
+        <p class="govuk-body">
+            {{ govukButton({
+                classes: "govuk-button--secondary",
+                text: "Add a location",
+                href: "/locations/add"
+            }) }}
+        </p>
+
+        <div>
+            {% for location in locations %}
+                <div class="list-item">
+                    <h2 class="govuk-heading-m"><a class="govuk-link govuk-link--no-visited-state"
+                                                   href="/locations/{{ location.id }}/readers">{{ location.display_name }}</a>
+                    </h2>
+                    <div class="list-item-meta">
+                        <dl>
+                            <dt>Address:</dt>
+                            <dd>{{ location.address.line1 }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+    </div>
+{% endblock %}

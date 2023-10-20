@@ -1,26 +1,35 @@
 {% extends "../layout.njk" %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
 
 {% block mainContent %}
     <div class="govuk-grid-column-two-thirds">
+        {{ govukBackLink({
+            text: "Locations",
+            href: "/locations"
+        }) }}
+
         <h1 class="govuk-heading-l">
+            <span class="govuk-caption-l">{{ location.display_name }}</span>
             Terminals
-            {% if simulated %}
+            {% if simulated === 'true' %}
                 <strong class="govuk-tag govuk-tag--grey">SIMULATED</strong>
             {% endif %}
         </h1>
 
         {% if simulated === 'true' %}
-            <p><a class="govuk-link govuk-link--no-visited-state" href="/readers">Show real terminals</a></p>
-        {% else %}
-            <p><a class="govuk-link govuk-link--no-visited-state" href="/readers?simulated=true">Show simulated terminals</a></p>
+            <p><a class="govuk-link govuk-link--no-visited-state" href="/locations/{{ location.id }}/readers">Show real
+                    terminals</a></p>
+{#        {% else %}#}
+{#            <p><a class="govuk-link govuk-link--no-visited-state"#}
+{#                  href="/locations/{{ location.id }}/readers?simulated=true">Show simulated terminals</a></p>#}
         {% endif %}
 
         <p class="govuk-body">
             {{ govukButton({
                 classes: "govuk-button--secondary",
                 text: "Register a new terminal",
-                href: "/readers/register?simulated=true" if simulated else "/readers/register"
+                href: "/locations/" + location.id + "/readers/register?simulated=" + simulated
             }) }}
         </p>
 
@@ -28,7 +37,12 @@
             {% for reader in readers %}
                 <div class="list-item">
                     <h2 class="govuk-heading-m"><a class="govuk-link govuk-link--no-visited-state"
-                                                   href="/readers/{{ reader.id }}?simulated={{ simulated }}">{{ reader.label }}</a>
+                                                   href="/locations/{{ locationId }}/readers/{{ reader.id }}">{{ reader.label }}</a>
+                        {% if reader.status === 'online' %}
+                            <strong class="govuk-tag govuk-tag--green govuk-!-static-margin-left-3">online</strong>
+                        {% else %}
+                            <strong class="govuk-tag govuk-tag--red govuk-!-static-margin-left-3">offline</strong>
+                        {% endif %}
                     </h2>
                     <div class="list-item-meta">
                         <dl>
@@ -45,7 +59,7 @@
                             {{ govukButton({
                                 classes: "govuk-button--secondary",
                                 text: "Take a payment",
-                                href: "/readers/" + reader.id + "/payment?simulated=" + simulated
+                                href: "/locations/" + locationId + "/readers/" + reader.id + "/payment"
                             }) }}
                         </span>
                     </div>

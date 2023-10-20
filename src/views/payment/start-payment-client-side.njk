@@ -65,9 +65,9 @@
                         console.log("Process result " + JSON.stringify(processResult))
 
                         if ({{ simulated }}) {
-                            window.location.href = `/readers/${selectedReader.id}/payment/{{ paymentIntentId }}/simulate-payment-method`
+                            window.location.href = `/locations/{{ locationId }}/readers/${selectedReader.id}/payment/{{ paymentIntentId }}/simulate-payment-method`
                         } else {
-                            window.location.href = `/readers/${selectedReader.id}/payment/{{ paymentIntentId }}/check-status`
+                            window.location.href = `/locations/{{ locationId }}/readers/${selectedReader.id}/payment/{{ paymentIntentId }}/check-status`
                         }
                     }
                 }

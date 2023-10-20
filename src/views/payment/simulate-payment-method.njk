@@ -8,7 +8,7 @@
         <p class="govuk-body-l">Payment created for a simulated terminal</p>
         <p class="govuk-body">For a real terminal, the terminal would now be ready to accept the customer's card.</p>
 
-        <form method="post" action="/readers/{{ readerId }}/payment/{{ paymentIntentId }}/simulate-payment-method">
+        <form method="post" action="/locations/{{ locationId }}/readers/{{ readerId }}/payment/{{ paymentIntentId }}/simulate-payment-method">
             {{ govukButton({ text: "Simulate card payment" }) }}
         </form>
 
