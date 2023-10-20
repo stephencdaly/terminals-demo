@@ -9,8 +9,6 @@
 
         <form method="post" action="/readers/{{ readerId }}/payment" novalidate>
 
-            <input id="simulated" name="simulated" type="hidden" value="{{ simulated }}"/>
-
             {{ govukInput({
                 label: {
                     text: "Amount"

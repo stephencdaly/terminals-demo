@@ -2,6 +2,7 @@ import Stripe from 'stripe'
 import {Request, Response, NextFunction} from 'express'
 import logger from './logger'
 import {STRIPE_API_VERSION} from './config'
+import {isSimulated} from "./utils";
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY, {
     apiVersion: STRIPE_API_VERSION
@@ -83,7 +84,7 @@ export async function postCreatePayment(req: Request, res: Response, next: NextF
             reader,
             paymentIntentId: paymentIntent.id,
             clientSecret: paymentIntent.client_secret,
-            simulated: body.simulated || false
+            simulated: isSimulated(reader)
         })
     } catch (err) {
         next(err)
@@ -177,8 +178,4 @@ function convertPoundsAndPenceToPence(poundsAndPenceAmount: string) {
     }
 
     return Number(pounds.concat(pence))
-}
-
-function isSimulated(reader: Stripe.Terminal.Reader | Stripe.Terminal.DeletedReader) {
-    return (reader as Stripe.Terminal.Reader).device_type.startsWith('simulated')
 }

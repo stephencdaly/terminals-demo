@@ -32,11 +32,11 @@ app.use(express.json({ strict: true, limit: '15kb' }))
 app.use(flash())
 
 // manage readers
-app.get('/readers', readers.list)
-app.get('/readers/register', readers.getRegister)
-app.post('/readers/register', readers.postRegister)
-app.get('/readers/:id', readers.detail)
-app.post('/readers/:id/delete', readers.deleteReader)
+app.get('/readers/:simulated', readers.list)
+app.get('/readers/:simulated/register', readers.getRegister)
+app.post('/readers/:simulated/register', readers.postRegister)
+app.get('/readers/:simulated/:id', readers.detail)
+app.post('/readers/:simulated/:id/delete', readers.deleteReader)
 
 // payment
 app.get('/readers/:id/payment', payment.getCreatePayment)

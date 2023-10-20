@@ -10,7 +10,7 @@
             {% endif %}
         </h1>
 
-        {% if simulated %}
+        {% if simulated === 'true' %}
             <p><a class="govuk-link govuk-link--no-visited-state" href="/readers">Show real terminals</a></p>
         {% else %}
             <p><a class="govuk-link govuk-link--no-visited-state" href="/readers?simulated=true">Show simulated terminals</a></p>

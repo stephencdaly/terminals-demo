@@ -2,6 +2,7 @@ import Stripe from 'stripe'
 import {Request, Response, NextFunction} from 'express'
 import logger from './logger'
 import {STRIPE_API_VERSION} from './config'
+import {isSimulated} from "./utils";
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY, {
     apiVersion: STRIPE_API_VERSION
@@ -27,13 +28,13 @@ export async function list(req: Request, res: Response, next: NextFunction) {
 
 export async function detail(req: Request, res: Response, next: NextFunction) {
     try {
-        const {params, query} = req
+        const {params} = req
         const reader = await stripe.terminal.readers.retrieve(params.id, {
             expand: ['location']
         })
         res.render('reader/detail', {
             reader,
-            simulated: query.simulated || false
+            simulated: isSimulated(reader)
         })
     } catch (err) {
         next(err)
@@ -42,10 +43,8 @@ export async function detail(req: Request, res: Response, next: NextFunction) {
 
 export async function getRegister(req: Request, res: Response, next: NextFunction) {
     try {
-        const {query} = req
         const locations = await stripe.terminal.locations.list()
         res.render('reader/register', {
-            simulated: query.simulated || false,
             locations: locations.data
         })
     } catch (err) {
@@ -61,8 +60,9 @@ export async function postRegister(req: Request, res: Response, next: NextFuncti
             registration_code: body.code,
             location: body.location
         })
+        const simulated = isSimulated(reader)
         req.flash('generic', `Terminal successfully registered with name “${reader.label}”`)
-        res.redirect(`/readers?simulated=${body.simulated || 'false'}`)
+        res.redirect(`/readers?simulated=${simulated}`)
     } catch (err) {
         next(err)
     }
@@ -71,9 +71,10 @@ export async function postRegister(req: Request, res: Response, next: NextFuncti
 export async function deleteReader(req: Request, res: Response, next: NextFunction) {
     try {
         const {params, body} = req
+        const reader = await stripe.terminal.readers.retrieve(params.id)
         await stripe.terminal.readers.del(params.id)
         req.flash('generic', 'Terminal successfully deleted')
-        res.redirect(`/readers?simulated=${body.simulated || 'false'}`)
+        res.redirect(`/readers?simulated=${isSimulated(reader)}`)
     } catch (err) {
         next(err)
     }
