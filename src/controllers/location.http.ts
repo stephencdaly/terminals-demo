@@ -1,6 +1,6 @@
 import Stripe from 'stripe'
 import {Request, Response, NextFunction} from 'express'
-import {STRIPE_API_VERSION} from './config'
+import {STRIPE_API_VERSION} from '../config'
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY, {
     apiVersion: STRIPE_API_VERSION

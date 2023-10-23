@@ -6,10 +6,10 @@ import session from 'express-session'
 
 import logger from './logger'
 
-import * as payment from './payment.http'
-import * as readers from './reader.http'
-import * as locations from './location.http'
-import * as stripe from './stripe.http'
+import * as payment from './controllers/payment.http'
+import * as readers from './controllers/reader.http'
+import * as locations from './controllers/location.http'
+import * as stripe from './controllers/stripe.http'
 import path from 'path'
 
 dotenv.config()

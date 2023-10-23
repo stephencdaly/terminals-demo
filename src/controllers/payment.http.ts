@@ -1,8 +1,8 @@
 import Stripe from 'stripe'
 import {Request, Response, NextFunction} from 'express'
-import logger from './logger'
-import {STRIPE_API_VERSION} from './config'
-import {isSimulated} from "./utils";
+import logger from '../logger'
+import {STRIPE_API_VERSION} from '../config'
+import {isSimulated} from "../utils";
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY, {
     apiVersion: STRIPE_API_VERSION

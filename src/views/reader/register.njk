@@ -1,9 +1,15 @@
 {% extends "../layout.njk" %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
 
 {% block mainContent %}
     <div class="govuk-grid-column-two-thirds">
+        {{ govukBackLink({
+            text: "Terminals",
+            href: "/locations/" +  locationId + "/readers?simulated=" + simulated
+        }) }}
+
         <h1 class="govuk-heading-l">
             <span class="govuk-caption-l">{{ location.display_name }}</span>
             Register a terminal
